@@ -1,0 +1,29 @@
+﻿@{
+    Layout = null;
+    var productID = ViewBag.ProductID;
+}
+
+<div class="modal-header bg-danger text-white">
+    <h5 class="modal-title">
+        <i class="bi bi-trash"></i>
+        Xóa mặt hàng khỏi đơn hàng
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+    <div class="alert alert-danger mb-0">
+        <i class="bi bi-exclamation-circle me-1"></i>
+        Bạn có muốn xóa mặt hàng này ra khỏi đơn hàng không?
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-primary" onclick="confirmDeleteCartItem(@productID)">
+        <i class="bi bi-check-lg"></i>
+        Chấp nhận
+    </button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+        Đóng
+    </button>
+</div>

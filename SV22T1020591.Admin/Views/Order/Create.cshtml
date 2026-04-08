@@ -1,0 +1,457 @@
+﻿@model SV22T1020591.Models.Catalog.ProductSearchInput
+@using SV22T1020591.Admin
+@{
+    ViewBag.Title = "Lập đơn hàng";
+}
+
+<div class="row">
+    <!-- Tìm kiếm & chọn mặt hàng -->
+    <div class="col-4">
+        <div class="card card-outline card-primary h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-search"></i>
+                    Lựa chọn hàng cần bán
+                </h5>
+            </div>
+
+            <div class="card-body">
+                <form id="formSearch"
+                      method="get"
+                      action="~/Order/SearchProduct"
+                      data-target="searchResult"
+                      onsubmit="paginationSearch(event, this, 1)"
+                      class="mb-3">
+                    <div class="input-group">
+                        <input type="hidden" asp-for="Page" />
+                        <input type="hidden" asp-for="PageSize" />
+                        <input type="hidden" asp-for="CategoryID" />
+                        <input type="hidden" asp-for="SupplierID" />
+                        <input type="hidden" asp-for="MaxPrice" />
+                        <input type="hidden" asp-for="MinPrice" />
+
+                        <input class="form-control"
+                               asp-for="SearchValue"
+                               placeholder="Nhập tên mặt hàng cần tìm"
+                               autofocus />
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <div id="searchResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Giỏ hàng và thông tin khách hàng -->
+    <div class="col-8">
+        <div class="row">
+            <div class="col-12" id="cart">
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card card-outline card-info">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person"></i>
+                            Thông tin khách hàng & nơi giao hàng
+                        </h5>
+                    </div>
+
+                    <div class="card-body">
+                        <form method="post" onsubmit="createOrder(event, this)">
+                            <div class="row mb-3">
+                                <label class="col-md-2 col-form-label">Khách hàng</label>
+                                <div class="col-md-10">
+                                    <select class="form-select" name="customerID" asp-items="ViewBag.Customers">
+                                        <option value="0">-- Chọn khách hàng --</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label class="col-md-2 col-form-label">Tỉnh/thành</label>
+                                <div class="col-md-10">
+                                    <select class="form-select" name="province" asp-items="await SelectListHelper.ProvincesAsync()">
+                                        <option value="">-- Tỉnh/Thành phố --</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label class="col-md-2 col-form-label">Địa chỉ</label>
+                                <div class="col-md-10">
+                                    <textarea class="form-control" name="address"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i>
+                                    Lập đơn hàng
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Helper: read antiforgery token on page if present
+        function getAntiForgeryToken() {
+            const el = document.querySelector('input[name="__RequestVerificationToken"]');
+            return el ? el.value : null;
+        }
+
+        // Generic POST using FormData to support default model binding on server
+        async function postForm(url, formData) {
+            // attach anti-forgery token if present
+            const token = getAntiForgeryToken();
+            if (token && !formData.has('__RequestVerificationToken')) {
+                formData.append('__RequestVerificationToken', token);
+            }
+
+            const res = await fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            // attempt JSON parse; if fails, throw
+            const ct = res.headers.get('content-type') || '';
+            if (ct.includes('application/json')) {
+                return res.json();
+            }
+
+            // fallback: try text then parse JSON
+            const text = await res.text();
+            try {
+                return JSON.parse(text);
+            } catch {
+                throw new Error('Unexpected response from server');
+            }
+        }
+
+        // Helper: read antiforgery token on page if present
+        function getAntiForgeryToken() {
+            const el = document.querySelector('input[name="__RequestVerificationToken"]');
+            return el ? el.value : null;
+        }
+
+        // Generic POST using FormData to support default model binding on server
+        async function postForm(url, formData) {
+            // attach anti-forgery token if present
+            const token = getAntiForgeryToken();
+            if (token && !formData.has('__RequestVerificationToken')) {
+                formData.append('__RequestVerificationToken', token);
+            }
+
+            const res = await fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            // attempt JSON parse; if fails, throw
+            const ct = res.headers.get('content-type') || '';
+            if (ct.includes('application/json')) {
+                return res.json();
+            }
+
+            // fallback: try text then parse JSON
+            const text = await res.text();
+            try {
+                return JSON.parse(text);
+            } catch {
+                throw new Error('Unexpected response from server');
+            }
+        }
+
+        // Helper: read antiforgery token on page if present
+        function getAntiForgeryToken() {
+            const el = document.querySelector('input[name="__RequestVerificationToken"]');
+            return el ? el.value : null;
+        }
+
+        // Generic POST using FormData to support default model binding on server
+        async function postForm(url, formData) {
+            // attach anti-forgery token if present
+            const token = getAntiForgeryToken();
+            if (token && !formData.has('__RequestVerificationToken')) {
+                formData.append('__RequestVerificationToken', token);
+            }
+
+            const res = await fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            // attempt JSON parse; if fails, throw
+            const ct = res.headers.get('content-type') || '';
+            if (ct.includes('application/json')) {
+                return res.json();
+            }
+
+            // fallback: try text then parse JSON
+            const text = await res.text();
+            try {
+                return JSON.parse(text);
+            } catch {
+                throw new Error('Unexpected response from server');
+            }
+        }
+
+            document.addEventListener("DOMContentLoaded", function () {
+            var form = document.getElementById("formSearch");
+            if (form) {
+                paginationSearch(null, form, @(Model != null ? Model.Page : 1));
+            }
+            showCart();
+        });
+
+        function showCart() {
+            fetch('/Order/ShowCart')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Không thể tải giỏ hàng');
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    document.getElementById('cart').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert('Không thể tải giỏ hàng!');
+                });
+        }
+
+        function addCartItem(event, form) {
+            event.preventDefault();
+
+            const formData = new FormData(form);
+
+            fetch('/Order/AddCartItem', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Lỗi khi gọi API');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.code === 0) {
+                    alert(data.message);
+                } else {
+                    showCart();
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Có lỗi xảy ra khi thêm vào giỏ hàng!');
+            });
+
+            return false;
+        }
+
+        function deleteCartItem(productID) {
+            fetch('/Order/DeleteCartItem?productId=' + productID, {
+                method: 'POST'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Lỗi khi gọi API');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.code === 0) {
+                    alert(data.message);
+                } else {
+                    showCart();
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Có lỗi xảy ra!');
+            });
+        }
+
+        function clearCart() {
+            fetch('/Order/ClearCart', {
+                method: 'POST'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Lỗi khi gọi API');
+                }
+                return response.json();
+            })
+            .then(() => {
+                showCart();
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Có lỗi xảy ra!');
+            });
+        }
+
+        function updateCartItem(event, form) {
+            event.preventDefault();
+
+            const formData = new FormData(form);
+
+            fetch('/Order/UpdateCartItem', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Lỗi khi gọi API');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.code === 0) {
+                    alert(data.message);
+                } else {
+                    showCart();
+
+                    const modalElement = document.getElementById('dialogModal');
+                    if (modalElement) {
+                        const modalInstance = bootstrap.Modal.getInstance(modalElement)
+                            || new bootstrap.Modal(modalElement);
+                        modalInstance.hide();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Có lỗi xảy ra khi cập nhật!');
+            });
+
+            return false;
+        }
+
+        function createOrder(event, form) {
+            event.preventDefault();
+
+            const formData = new FormData(form);
+
+            fetch('/Order/CreateOrder', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Lỗi khi gọi API');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.code === 0) {
+                    alert(data.message);
+                } else {
+                    window.location.href = '/Order/Detail/' + data.code;
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Có lỗi xảy ra khi tạo đơn hàng!');
+            });
+
+            return false;
+        }
+    </script>
+}
+
+<script>
+    function confirmDeleteCartItem(productID) {
+        fetch('/Order/DeleteCartItem?productId=' + productID, {
+            method: 'POST'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Lỗi khi xóa mặt hàng');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.code === 0) {
+                alert(data.message);
+            } else {
+                var modalElement = document.getElementById('dialogModal');
+                if (modalElement) {
+                    var modalInstance = bootstrap.Modal.getInstance(modalElement);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+                }
+
+                showCart();
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            alert('Có lỗi xảy ra khi xóa mặt hàng!');
+        });
+    }
+</script>
+<script>
+    function confirmClearCart() {
+        fetch('/Order/ClearCart', {
+            method: 'POST'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 0) {
+                alert(data.message);
+            } else {
+                const modal = document.getElementById('dialogModal');
+                if (modal) {
+                    const modalInstance = bootstrap.Modal.getInstance(modal);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+                }
+
+                showCart();
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Lỗi khi xóa giỏ hàng!");
+        });
+    }
+</script>
+<script>
+    function goToProductPage(page) {
+        var form = document.getElementById("formSearch");
+        if (!form) return;
+
+        var pageInput = form.querySelector('input[name="Page"]');
+        if (pageInput) {
+            pageInput.value = page;
+        }
+
+        paginationSearch(null, form, page);
+    }
+</script>

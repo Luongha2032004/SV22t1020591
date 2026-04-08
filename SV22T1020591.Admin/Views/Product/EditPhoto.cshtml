@@ -1,0 +1,111 @@
+﻿@model SV22T1020591.Models.Catalog.ProductPhoto
+@{
+}
+@section PageToolBar {
+    <button type="submit" form="formEdit" class="btn btn-primary">
+        <i class="bi bi-save"></i>
+        Lưu ảnh
+    </button>
+
+    <a asp-controller="Product" asp-action="Edit" asp-route-id="@Model.ProductID" class="btn btn-secondary ms-1">
+        <i class="bi bi-arrow-left"></i>
+        Quay lại
+    </a>
+}
+
+<div class="row justify-content-center">
+    <div class="col-12">
+        <div class="card card-outline card-info">
+            <div class="card-header">
+                <h5 class="mb-0">Thông tin ảnh mặt hàng</h5>
+            </div>
+
+            <div class="card-body">
+                <form id="formEdit" asp-controller="Product" asp-action="SavePhoto" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+
+                    @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+
+                    <input type="hidden" asp-for="PhotoID" />
+                    <input type="hidden" asp-for="ProductID" />
+                    <input type="hidden" asp-for="Photo" />
+
+                    <!-- Upload ảnh -->
+                    <div class="row mb-3 align-items-center">
+                        <label class="col-sm-3 fw-semibold">Ảnh</label>
+                        <div class="col-sm-9">
+                            <input type="file"
+                                   name="uploadPhoto"
+                                   class="form-control"
+                                   accept="image/*"
+                                   data-img-preview="imgPreview"
+                                   onchange="previewImage(this)" />
+                        </div>
+                    </div>
+
+                    <!-- Preview -->
+                    <div class="row mb-3">
+                        <label class="col-sm-3 fw-semibold">Xem trước</label>
+                        <div class="col-sm-9">
+                            <img id="imgPreview"
+                                 src="@Url.Content(string.IsNullOrEmpty(Model?.Photo) ? "~/images/products/nophoto.png" : $"~/images/products/{Model.Photo}")"
+                                 class="img-thumbnail"
+                                 style="max-height:200px;" />
+                        </div>
+                    </div>
+
+                    <!-- Mô tả -->
+                    <div class="row mb-3">
+                        <label class="col-sm-3 fw-semibold">Mô tả</label>
+                        <div class="col-sm-9">
+                            <input type="text" asp-for="Description"
+                                   class="form-control" />
+                        </div>
+                    </div>
+
+                    <!-- Thứ tự -->
+                    <div class="row mb-3">
+                        <label class="col-sm-3 fw-semibold">Thứ tự hiển thị</label>
+                        <div class="col-sm-3">
+                            <input type="number" asp-for="DisplayOrder"
+                                   class="form-control"
+                                   min="1" />
+                        </div>
+                    </div>
+
+                    <!-- Trạng thái -->
+                    <div class="row mb-4">
+                        <label class="col-sm-3 fw-semibold">Trạng thái</label>
+                        <div class="col-sm-9">
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                       asp-for="IsHidden"
+                                       type="checkbox"
+                                       id="IsHidden" />
+                                <label class="form-check-label" for="IsHidden">
+                                    Ẩn ảnh
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function previewImage(input) {
+            if (!input || !input.files || input.files.length === 0) return;
+            var file = input.files[0];
+            if (!file.type.startsWith('image/')) return;
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var img = document.getElementById(input.getAttribute('data-img-preview') || 'imgPreview');
+                if (img) img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+}

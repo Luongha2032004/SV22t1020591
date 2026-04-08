@@ -1,0 +1,334 @@
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
+@using SV22T1020591.Models.Catalog
+@using SV22T1020591.Models.Common
+@using SV22T1020591.Shop
+@using SV22T1020591.Shop.Models
+@model List<CartItem>
+
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+@section Styles {
+    <style>
+        .btn-save {
+            background: linear-gradient(95deg, #6d28d9, #7e22ce);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+            .btn-save:hover {
+                background: linear-gradient(95deg, #5b21b6, #6b21a5);
+                transform: translateY(-1px);
+                color: white;
+            }
+
+        .required:after {
+            content: " *";
+            color: red;
+        }
+
+        .is-invalid {
+            border-color: #dc2626 !important;
+        }
+
+        .cart-img {
+            width: 72px;
+            height: 72px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .qty-input {
+            width: 64px;
+            text-align: center;
+        }
+    </style>
+}
+
+<div class="container">
+    <h3 class="mb-4">🛒 Giỏ hàng của bạn</h3>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info text-center">
+            <i class="bi bi-cart-x fs-1 d-block mb-3"></i>
+            <p>Giỏ hàng hiện đang trống.</p>
+            <a href="~/Product" class="btn btn-primary mt-2">Tiếp tục mua sắm</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        @* <th style="width:80px">Ảnh</th> *@
+                        <th>Tên sản phẩm</th>
+                        <th style="width:140px" class="text-end">Đơn giá</th>
+                        <th style="width:120px" class="text-center">Số lượng</th>
+                        <th style="width:140px" class="text-end">Thành tiền</th>
+                        <th style="width:80px"></th>
+                    </tr>
+                </thead>
+                <tbody id="cartBody">
+                    @foreach (var item in Model)
+                    {
+                        <tr data-productid="@item.ProductID">
+                            <td>
+                                <a href="~/Product/Details/@item.ProductID" class="fw-semibold text-decoration-none">@item.ProductName</a>
+                            </td>
+                            <td class="text-end product-price">@String.Format("{0:N0} đ", item.SalePrice)</td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center align-items-center gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeQty(@item.ProductID, -1)">
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+                                    <input type="number" min="1" value="@item.Quantity"
+                                           class="form-control form-control-sm text-center qty-input"
+                                           onchange="qtyChanged(@item.ProductID, this.value)" />
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeQty(@item.ProductID, 1)">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td class="text-end line-total fw-semibold">@String.Format("{0:N0} đ", item.SalePrice * item.Quantity)</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-danger" onclick="removeItem(@item.ProductID)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3">
+            <div>
+                <button type="button" class="btn btn-outline-danger" onclick="clearCart()">
+                    <i class="bi bi-trash3"></i> Xóa toàn bộ
+                </button>
+                <a class="btn btn-outline-secondary ms-2" href="~/Product">
+                    <i class="bi bi-arrow-left"></i> Tiếp tục mua sắm
+                </a>
+            </div>
+
+            <div style="min-width:300px; max-width:360px;">
+                <div class="card bg-light p-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tổng số lượng:</span>
+                        <span id="cartTotalItems" class="fw-bold">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Tổng tiền:</span>
+                        <span id="cartTotalPrice" class="fw-bold text-danger fs-5">0 đ</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form thanh toán -->
+        <div class="card p-4 mt-4 shadow-sm">
+            <h5 class="mb-3"><i class="bi bi-credit-card"></i> Thông tin thanh toán</h5>
+
+            <form id="checkoutForm" asp-controller="Order" asp-action="CreateOrder" method="post" novalidate>
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label class="form-label required">Tỉnh/Thành phố</label>
+                    @{
+                        var provinces = ViewBag.Provinces as List<SelectListItem> ?? new List<SelectListItem>();
+                    }
+                    <select name="Province" id="Province" class="form-select">
+                        @foreach (var p in provinces)
+                        {
+                            <option value="@p.Value">@p.Text</option>
+                        }
+                    </select>
+                    <div class="invalid-feedback">Vui lòng chọn tỉnh/thành phố</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label required">Địa chỉ giao hàng</label>
+                    <textarea name="Address" id="Address" class="form-control" rows="2"
+                          placeholder="Số nhà, đường, phường/xã, quận/huyện..."></textarea>
+                    <div class="invalid-feedback">Vui lòng nhập địa chỉ giao hàng</div>
+                </div>
+
+                <div class="d-grid mt-3">
+                    <button type="submit" class="btn btn-save" id="btnCheckout">
+                        <i class="bi bi-check-lg"></i> Tiến hành thanh toán
+                    </button>
+                </div>
+            </form>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Recalculate totals from DOM
+        function recalcCartUI() {
+            let totalItems = 0;
+            let totalPrice = 0;
+            document.querySelectorAll('#cartBody tr').forEach(tr => {
+                const qtyInput = tr.querySelector('.qty-input');
+                const qty = parseInt(qtyInput?.value || 0, 10);
+                const priceText = tr.querySelector('.product-price').textContent.trim().replace(/[^\d]/g,'');
+                const price = parseFloat(priceText || 0);
+                totalItems += qty;
+                totalPrice += qty * price;
+                const lineTotalEl = tr.querySelector('.line-total');
+                if (lineTotalEl) {
+                    lineTotalEl.textContent = new Intl.NumberFormat('vi-VN').format(qty * price) + ' đ';
+                }
+            });
+            document.getElementById('cartTotalItems').textContent = totalItems;
+            document.getElementById('cartTotalPrice').textContent = new Intl.NumberFormat('vi-VN').format(totalPrice) + ' đ';
+        }
+
+        async function postForm(url, formData) {
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                });
+                return await res.json();
+            } catch (e) {
+                console.error(e);
+                return null;
+            }
+        }
+
+        // Update quantity on server
+        async function updateOnServer(productID, quantity) {
+            try {
+                const fd = new FormData();
+                fd.append('productID', productID);
+                fd.append('quantity', quantity);
+                const res = await fetch('/Cart/Update', { method: 'POST', body: fd, credentials: 'same-origin' });
+                return await res.json();
+            } catch (e) {
+                console.error(e);
+                return null;
+            }
+        }
+
+        async function changeQty(productID, delta) {
+            const tr = document.querySelector('#cartBody tr[data-productid="' + productID + '"]');
+            if (!tr) return;
+            const input = tr.querySelector('.qty-input');
+            let qty = parseInt(input.value || 0, 10);
+            qty = Math.max(1, qty + delta);
+            input.value = qty;
+            await updateOnServer(productID, qty);
+            recalcCartUI();
+        }
+
+        async function qtyChanged(productID, value) {
+            let qty = parseInt(value || 0, 10);
+            if (isNaN(qty) || qty < 1) qty = 1;
+            const tr = document.querySelector('#cartBody tr[data-productid="' + productID + '"]');
+            if (!tr) return;
+            const input = tr.querySelector('.qty-input');
+            input.value = qty;
+            await updateOnServer(productID, qty);
+            recalcCartUI();
+        }
+
+        async function removeItem(productID) {
+            if (!confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ?')) return;
+            try {
+                const fd = new FormData();
+                fd.append('productID', productID);
+                const res = await fetch('/Cart/Remove', { method: 'POST', body: fd, credentials: 'same-origin' });
+                const data = await res.json();
+                if (data && data.success) {
+                    const tr = document.querySelector('#cartBody tr[data-productid="' + productID + '"]');
+                    if (tr) tr.remove();
+                    recalcCartUI();
+                    if (document.querySelectorAll('#cartBody tr').length === 0) location.reload();
+                } else {
+                    alert(data?.message || 'Xóa không thành công.');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Lỗi khi xóa.');
+            }
+        }
+
+        async function clearCart() {
+            if (!confirm('Bạn có chắc muốn xóa toàn bộ giỏ hàng?')) return;
+            try {
+                const res = await fetch('/Cart/Clear', { method: 'POST', credentials: 'same-origin' });
+                const data = await res.json();
+                if (data && data.success) {
+                    location.reload();
+                } else {
+                    alert('Không thể xóa giỏ hàng.');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Lỗi khi xóa giỏ hàng.');
+            }
+        }
+
+        // Checkout: client validation only, then normal form submit (no AJAX) to avoid antiforgery/auth redirect issues.
+        (function () {
+            const form = document.getElementById('checkoutForm');
+            if (!form) return;
+
+            form.addEventListener('submit', function (e) {
+                // Reset validation UI
+                const provinceEl = document.getElementById('Province');
+                const addressEl = document.getElementById('Address');
+                provinceEl.classList.remove('is-invalid');
+                addressEl.classList.remove('is-invalid');
+
+                let isValid = true;
+                if (!provinceEl.value.trim()) {
+                    provinceEl.classList.add('is-invalid');
+                    isValid = false;
+                }
+                if (!addressEl.value.trim()) {
+                    addressEl.classList.add('is-invalid');
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    try {
+                        const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                        document.getElementById('errorMessage').innerText = 'Vui lòng nhập đầy đủ thông tin.';
+                        errorModal.show();
+                    } catch {
+                        alert('Vui lòng nhập đầy đủ thông tin.');
+                    }
+                    return;
+                }
+
+                // Disable the button to prevent double submit and allow normal submit to proceed
+                const btn = document.getElementById('btnCheckout');
+                btn.disabled = true;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Đang xử lý...';
+
+                // Let the browser submit the form normally (server handles antiforgery & session)
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }, 5000);
+            });
+        })();
+
+        document.addEventListener('DOMContentLoaded', function () {
+            recalcCartUI();
+        });
+    </script>
+}

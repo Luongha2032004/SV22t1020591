@@ -1,0 +1,103 @@
+﻿@{
+    Layout = null;
+    var orderId = ViewBag.OrderID ?? 0;
+}
+<form id="formCancel" action="@Url.Action("CancelConfirmed", "Order")" method="post">
+    @Html.AntiForgeryToken()
+    <div class="modal-header text-bg-warning">
+        <strong class="modal-title">
+            Xác nhận hủy đơn hàng
+        </strong>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+
+    <div class="modal-body">
+        <div class="alert alert-warning d-flex align-items-center">
+            <i class="bi bi-info-circle me-2"></i>
+            Bạn có thực sự muốn hủy đơn hàng này hay không?
+        </div>
+
+        <input type="hidden" id="cancelOrderId" name="id" value="@orderId" />
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check"></i> Chấp nhận
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Đóng
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        (function () {
+            const form = document.getElementById('formCancel');
+            if (!form) return;
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                try {
+                    const formData = new FormData(form);
+                    const res = await fetch(form.action, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+
+                    const ct = res.headers.get('content-type') || '';
+
+                    // If JSON, parse and handle normally
+                    if (ct.includes('application/json')) {
+                        const data = await res.json();
+                        if (data?.success) {
+                            // close modal
+                            try {
+                                const modalEl = document.getElementById('dialogModal');
+                                if (modalEl) {
+                                    const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                                    modal.hide();
+                                }
+                            } catch { }
+
+                            if (data.redirectUrl) {
+                                window.location.href = data.redirectUrl;
+                            } else {
+                                location.reload();
+                            }
+                        } else {
+                            alert(data?.message || 'Không thể hủy đơn hàng.');
+                        }
+                        return;
+                    }
+
+                    // Not JSON — read text for diagnosis
+                    const text = await res.text();
+                    console.error('CancelConfirmed response (non-json):', res.status, text);
+
+                    // Try to parse JSON-like text (some servers may return JSON with wrong content-type)
+                    try {
+                        const parsed = JSON.parse(text);
+                        if (parsed?.success) {
+                            location.reload();
+                            return;
+                        }
+                        alert(parsed?.message || `Server returned status ${res.status}`);
+                        return;
+                    } catch {
+                        // Show the server HTML or message for debugging
+                        const debugMsg = `Request failed. Status: ${res.status}\n\nResponse preview:\n${text.substring(0, 2000)}`;
+                        // show simple modal with response (debug)
+                        alert(debugMsg);
+                    }
+                } catch (err) {
+                    console.error('Error posting CancelConfirmed:', err);
+                    alert('Lỗi khi hủy đơn hàng. Xem console (F12) / Network tab để biết chi tiết.');
+                }
+            }, { once: true });
+        })();
+    </script>
+}

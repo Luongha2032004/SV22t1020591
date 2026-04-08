@@ -1,0 +1,200 @@
+﻿@using SV22T1020591.Models.Catalog
+@using SV22T1020591.Models.Common
+@using SV22T1020591.Shop
+@using SV22T1020591.Shop.Models
+@model PagedResult<Product>
+
+@{
+    ViewData["Title"] = "Sản phẩm";
+
+    var input = ViewBag.SearchInput as ProductSearchInput ?? new ProductSearchInput();
+    var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
+
+    string qSearch = input.SearchValue ?? "";
+    int qCategory = input.CategoryID;
+    decimal qMin = input.MinPrice;
+    decimal qMax = input.MaxPrice;
+
+    object PageRoute(int page) => new
+    {
+        searchValue = qSearch,
+        CategoryID = qCategory == 0 ? (int?)null : qCategory,
+        MinPrice = qMin == 0 ? (decimal?)null : qMin,
+        MaxPrice = qMax == 0 ? (decimal?)null : qMax,
+        Page = page
+    };
+}
+
+<div class="modern-content">
+
+    <!-- HEADER -->
+    <div class="header-section">
+        <h4 class="fw-bold mb-0">🛍️ Danh sách sản phẩm</h4>
+        <p class="text-muted small mb-0">Khám phá những sản phẩm chất lượng</p>
+    </div>
+
+    <!-- FILTER CARD -->
+    <div class="filter-card">
+        <form method="get" action="/Product/Index" class="filter-form">
+            <div class="filter-grid">
+                <div class="filter-item">
+                    <input class="form-control"
+                           name="searchValue"
+                           placeholder="🔍 Tìm sản phẩm..."
+                           value="@qSearch" />
+                </div>
+
+                <div class="filter-item">
+                    <select name="CategoryID" class="form-select">
+                        <option value="0">-- Tất cả danh mục --</option>
+                        @foreach (var c in categories)
+                        {
+                            <option value="@c.CategoryID" selected="@(c.CategoryID == qCategory ? "selected" : null)">
+                                @c.CategoryName
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <input class="form-control"
+                           type="number"
+                           name="MinPrice"
+                           placeholder="Giá từ (VNĐ)"
+                           value="@(qMin == 0 ? "" : qMin.ToString())" />
+                </div>
+
+                <div class="filter-item">
+                    <input class="form-control"
+                           type="number"
+                           name="MaxPrice"
+                           placeholder="Giá đến (VNĐ)"
+                           value="@(qMax == 0 ? "" : qMax.ToString())" />
+                </div>
+
+                <div class="filter-item">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Tìm kiếm
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- PRODUCT LIST -->
+    @if (Model?.DataItems == null || !Model.DataItems.Any())
+    {
+        <div class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <h5>Không tìm thấy sản phẩm</h5>
+            <p class="text-muted">Hãy thử điều chỉnh bộ lọc tìm kiếm</p>
+        </div>
+    }
+    else
+    {
+        <div class="product-grid">
+            @foreach (var p in Model.DataItems)
+            {
+                <div class="product-card">
+                    <a href="~/Product/Details/@p.ProductID" class="product-img-link">
+                        <img src="~/images/products/@(string.IsNullOrEmpty(p.Photo) ? "placeholder.png" : p.Photo)"
+                             alt="@p.ProductName"
+                             class="product-img" />
+                    </a>
+
+                    <div class="product-info">
+                        <div class="product-name" title="@p.ProductName">
+                            @p.ProductName
+                        </div>
+                        <div class="product-category">
+                            <i class="fas fa-tag"></i> @p.CategoryName
+                        </div>
+                        <div class="product-price">
+                            @String.Format("{0:N0}₫", p.Price)
+                        </div>
+
+                        <div class="product-actions">
+                            <a href="~/Product/Details/@p.ProductID" class="btn-action btn-outline">
+                                <i class="fas fa-eye"></i> Xem
+                            </a>
+                            <button class="btn-action btn-primary-custom"
+                                    onclick="addToCartHandler(@p.ProductID)">
+                                <i class="fas fa-cart-plus"></i> Giỏ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- PAGINATION (uses PagedResult.GetDisplayPages for smart ellipsis) -->
+        @if (Model.PageCount > 1)
+        {
+            <nav class="mt-4" aria-label="Product pagination">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                        @if (Model.HasPreviousPage)
+                        {
+                            <a class="page-link" href="@Url.Action("Index", "Product", PageRoute(Model.Page - 1))" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="page-link">&laquo;</span>
+                        }
+                    </li>
+
+                    @foreach (var p in Model.GetDisplayPages(3))
+                    {
+                        if (p.Page == 0)
+                        {
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        }
+                        else if (p.IsCurrent)
+                        {
+                            <li class="page-item active" aria-current="page">
+                                <span class="page-link">@p.Page</span>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("Index", "Product", PageRoute(p.Page))">@p.Page</a>
+                            </li>
+                        }
+                    }
+
+                    <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                        @if (Model.HasNextPage)
+                        {
+                            <a class="page-link" href="@Url.Action("Index", "Product", PageRoute(Model.Page + 1))" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="page-link">&raquo;</span>
+                        }
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+</div>
+
+<script>
+    async function addToCartHandler(productId) {
+        try {
+            const response = await window.addToCart(productId, 1);
+            if (response && response.success) {
+                alert(`✅ Đã thêm vào giỏ hàng! (Tổng: ${response.totalItems ?? 0} sản phẩm)`);
+            } else {
+                alert('❌ Không thể thêm vào giỏ hàng');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('⚠️ Lỗi kết nối, vui lòng thử lại');
+        }
+    }
+</script>

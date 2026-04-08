@@ -1,0 +1,48 @@
+﻿@{
+    ViewBag.Title = "Đăng nhập";
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+}
+
+<div class="auth-card">
+    <div class="auth-header">
+        <h3>Lương Hà Shop</h3>
+        <small>Đăng nhập tài khoản</small>
+    </div>
+
+    <div class="auth-body">
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                @Html.ValidationSummary(false)
+            </div>
+        }
+
+        <form asp-controller="Account" asp-action="Login" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label>Email</label>
+                <div class="input-group">
+                    <input name="username" class="form-control" placeholder="Email" />
+                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label>Mật khẩu</label>
+                <div class="input-group">
+                    <input name="password" type="password" class="form-control" />
+                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                </div>
+            </div>
+
+            <button class="btn btn-gradient w-100">Đăng nhập</button>
+
+            <div class="text-center mt-3">
+                <span>Chưa có tài khoản?</span>
+                <a asp-action="Register">Đăng ký</a>
+            </div>
+        </form>
+    </div>
+</div>

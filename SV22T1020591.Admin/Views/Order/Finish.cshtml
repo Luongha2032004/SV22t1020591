@@ -1,0 +1,30 @@
+﻿@{
+    Layout = null;
+    var orderId = ViewBag.OrderID ?? 0;
+}
+<form id="formFinish" action="@Url.Action("FinishConfirmed", "Order")" method="post">
+    <div class="modal-header text-bg-success">
+        <strong class="modal-title">
+            Xác nhận hoàn tất đơn hàng
+        </strong>
+        <button type="button" class="btn btn-close" data-bs-dismiss="modal"></button>
+    </div>
+
+    <div class="modal-body">
+        <div class="alert alert-success d-flex align-items-center">
+            <i class="bi bi-check-circle me-2"></i>
+            Bạn có chắc chắn xác nhận đơn hàng này đã giao thành công và hoàn tất không?
+        </div>
+
+        <input type="hidden" id="finishOrderId" name="id" value="@orderId" />
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg"></i> Hoàn tất
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Đóng
+        </button>
+    </div>
+</form>

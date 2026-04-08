@@ -1,0 +1,38 @@
+﻿@using SV22T1020591.Models.Catalog
+@using SV22T1020591.Models.Common
+@using SV22T1020591.Models.Sales
+@using SV22T1020591.Shop
+@using SV22T1020591.Shop.Models
+@model List<OrderViewInfo>
+
+@{
+    ViewData["Title"] = "Lịch sử mua hàng";
+    var orders = Model ?? new List<OrderViewInfo>();
+}
+
+<div class="container">
+    <h3 class="mb-4">Lịch sử mua hàng</h3>
+
+    @if (!orders.Any())
+    {
+        <div class="alert alert-info">Chưa có đơn hàng hoàn thành.</div>
+    }
+    else
+    {
+        <div class="list-group">
+            @foreach (var o in orders)
+            {
+                <a href="~/Order/Details/@o.OrderID" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-bold">Đơn #@o.OrderID — @o.OrderTime.ToString("g")</div>
+                        <div class="small text-muted">@o.DeliveryProvince — @o.DeliveryAddress</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-semibold">@String.Format("{0:N0} đ", o.TotalAmount)</div>
+                        <div class="small text-muted">@o.Status</div>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+</div>

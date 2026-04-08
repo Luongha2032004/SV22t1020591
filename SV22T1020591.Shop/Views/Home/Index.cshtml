@@ -1,0 +1,204 @@
+﻿@using SV22T1020591.Models.Catalog
+@using SV22T1020591.Models.Common
+@using SV22T1020591.Shop
+@using SV22T1020591.Shop.Models
+@{
+    ViewData["Title"] = "Trang chủ";
+
+    var best = ViewBag.BestSellingProducts as List<Product> ?? new List<Product>();
+    var favs = ViewBag.MostFavoriteProducts as List<Product> ?? new List<Product>();
+}
+
+<div class="home-container">
+
+    <!-- ===== HERO BANNER ===== -->
+    <div class="hero-banner">
+        <div class="hero-banner-content">
+            <span class="hero-badge">✨ Lương Hà Shop Official</span>
+            <h1 class="hero-title">Thời trang<br><span class="text-gradient">Đẳng cấp & Tinh tế</span></h1>
+            <p class="hero-description">Khám phá bộ sưu tập mới nhất với thiết kế độc đáo, chất lượng vượt trội và giá cả hợp lý</p>
+            <div class="hero-buttons">
+                <a asp-controller="Product" asp-action="Index" class="btn-primary-custom" style="padding: 12px 28px; border-radius: 50px; text-decoration: none;">
+                    <i class="bi bi-bag-check"></i> Mua sắm ngay
+                </a>
+                <a asp-controller="Product" asp-action="Index" class="btn-outline-custom">
+                    <i class="bi bi-grid-3x3"></i> Khám phá
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number">500+</span>
+                    <span class="stat-label">Sản phẩm</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">10k+</span>
+                    <span class="stat-label">Khách hàng</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">98%</span>
+                    <span class="stat-label">Hài lòng</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-banner-image">
+            <img src="~/images/hero-fashion.svg" alt="Lương Hà Shop" onerror="this.src='https://placehold.co/500x450/8b5cf6/white?text=Lương Hà+Shop'">
+        </div>
+    </div>
+
+    <!-- ===== FEATURES ===== -->
+    <div class="features-grid">
+        <div class="feature-item">
+            <div class="feature-icon"><i class="bi bi-truck"></i></div>
+            <h4>Giao hàng miễn phí</h4>
+            <p>Cho đơn hàng từ 500.000đ</p>
+        </div>
+        <div class="feature-item">
+            <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+            <h4>Bảo hành 30 ngày</h4>
+            <p>Đổi trả dễ dàng</p>
+        </div>
+        <div class="feature-item">
+            <div class="feature-icon"><i class="bi bi-headset"></i></div>
+            <h4>Hỗ trợ 24/7</h4>
+            <p>Chăm sóc khách hàng</p>
+        </div>
+        <div class="feature-item">
+            <div class="feature-icon"><i class="bi bi-gem"></i></div>
+            <h4>Sản phẩm chính hãng</h4>
+            <p>Cam kết chất lượng</p>
+        </div>
+    </div>
+
+    <!-- ===== BÁN CHẠY NHẤT ===== -->
+    <section class="product-section">
+        <div class="section-header">
+            <div class="section-badge">🔥 Bán chạy nhất</div>
+            <h2 class="section-title">Sản phẩm bán chạy</h2>
+            <p class="section-desc">Những sản phẩm được khách hàng tin tưởng lựa chọn nhiều nhất</p>
+        </div>
+
+        @if (!best.Any())
+        {
+            <div class="empty-state">
+                <i class="bi bi-emoji-frown"></i>
+                <h5>Chưa có sản phẩm nào</h5>
+                <p>Hãy quay lại sau nhé!</p>
+            </div>
+        }
+        else
+        {
+            <div class="product-grid">
+                @foreach (var p in best)
+                {
+                    <div class="product-card">
+                        <div class="product-badge hot">Hot</div>
+                        <a asp-controller="Product" asp-action="Details" asp-route-id="@p.ProductID" class="product-img-link">
+                            <img src="~/images/products/@(string.IsNullOrEmpty(p.Photo) ? "placeholder.png" : p.Photo)"
+                                 alt="@p.ProductName"
+                                 class="product-img" />
+                        </a>
+                        <div class="product-info">
+                            <h6 class="product-name" title="@p.ProductName">@p.ProductName</h6>
+                            <div class="product-meta">
+                                <span><i class="bi bi-building"></i> @p.SupplierName</span>
+                                <span><i class="bi bi-tag"></i> @p.CategoryName</span>
+                            </div>
+                            <div class="product-price">
+                                @String.Format("{0:N0}₫", p.Price)
+                            </div>
+                            <div class="product-actions">
+                                <a asp-controller="Product" asp-action="Details" asp-route-id="@p.ProductID" class="btn-action btn-outline">
+                                    <i class="bi bi-eye"></i> Xem
+                                </a>
+                                <button class="btn-action btn-primary-custom" onclick="(async()=>{ const r = await window.addToCart(@p.ProductID,1); if(r && r.success){ alert('✅ Đã thêm vào giỏ hàng! (Tổng: ' + (r.totalItems ?? 0) + ' sản phẩm)'); } else { alert('❌ Không thể thêm vào giỏ hàng'); } })();">  
+                                    <i class="bi bi-cart-plus"></i> Giỏ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </section>
+
+    <!-- ===== ƯA THÍCH NHẤT ===== -->
+    <section class="product-section">
+        <div class="section-header">
+            <div class="section-badge favorite">❤️ Yêu thích nhất</div>
+            <h2 class="section-title">Sản phẩm được yêu thích</h2>
+            <p class="section-desc">Những sản phẩm nhận được nhiều phản hồi tích cực từ khách hàng</p>
+        </div>
+
+        @if (!favs.Any())
+        {
+            <div class="empty-state">
+                <i class="bi bi-heart"></i>
+                <h5>Chưa có sản phẩm yêu thích</h5>
+                <p>Hãy quay lại sau nhé!</p>
+            </div>
+        }
+        else
+        {
+            <div class="product-grid">
+                @foreach (var p in favs)
+                {
+                    <div class="product-card">
+                        <div class="product-badge favorite">Yêu thích</div>
+                        <a asp-controller="Product" asp-action="Details" asp-route-id="@p.ProductID" class="product-img-link">
+                            <img src="~/images/products/@(string.IsNullOrEmpty(p.Photo) ? "placeholder.png" : p.Photo)"
+                                 alt="@p.ProductName"
+                                 class="product-img" />
+                        </a>
+                        <div class="product-info">
+                            <h6 class="product-name" title="@p.ProductName">@p.ProductName</h6>
+                            <div class="product-meta">
+                                <span><i class="bi bi-building"></i> @p.SupplierName</span>
+                                <span><i class="bi bi-tag"></i> @p.CategoryName</span>
+                            </div>
+                            <div class="product-price">
+                                @String.Format("{0:N0}₫", p.Price)
+                            </div>
+                            <div class="product-actions">
+                                <a asp-controller="Product" asp-action="Details" asp-route-id="@p.ProductID" class="btn-action btn-outline">
+                                    <i class="bi bi-eye"></i> Xem
+                                </a>
+                                <button class="btn-action btn-primary-custom" onclick="addToCart(@p.ProductID, 1)">
+                                    <i class="bi bi-cart-plus"></i> Giỏ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </section>
+
+    <!-- ===== NEWSLETTER ===== -->
+    <div class="newsletter-card">
+        <div class="newsletter-icon">
+            <i class="bi bi-envelope-paper-heart"></i>
+        </div>
+        <h3>Đăng ký nhận ưu đãi</h3>
+        <p>Nhận thông tin khuyến mãi đặc biệt và sản phẩm mới nhất</p>
+        <div class="newsletter-form">
+            <input type="email" class="newsletter-input" placeholder="Email của bạn">
+            <button class="newsletter-submit">Đăng ký ngay</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    async function addToCart(productId, quantity) {
+        if (typeof window.addToCart === 'function') {
+            const result = await window.addToCart(productId, quantity);
+            if (result && result.success) {
+                alert(`✅ Đã thêm vào giỏ hàng! (Tổng: ${result.totalItems ?? 0} sản phẩm)`);
+            } else {
+                alert('❌ Không thể thêm vào giỏ hàng');
+            }
+        } else {
+            alert('⚠️ Chức năng đang được cập nhật');
+        }
+    }
+</script>

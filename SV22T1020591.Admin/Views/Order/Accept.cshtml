@@ -1,0 +1,33 @@
+﻿@{
+    Layout = null;
+    var orderId = ViewBag.OrderID ?? 0;
+}
+
+<form action="@Url.Action("AcceptConfirmed", "Order")" method="post">
+    <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+            <i class="bi bi-check-circle me-2"></i>
+            Duyệt đơn hàng
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+
+    <div class="modal-body">
+        <div class="alert alert-info">
+            Bạn có chắc chắn muốn <b>duyệt đơn hàng</b> này không?
+        </div>
+
+        <!-- QUAN TRỌNG -->
+        <input type="hidden" name="id" value="@orderId" />
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check"></i> Xác nhận
+        </button>
+
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Đóng
+        </button>
+    </div>
+</form>

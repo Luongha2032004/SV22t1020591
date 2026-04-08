@@ -1,0 +1,9 @@
+﻿@import url('/lib/shoplte/css/layout.css');
+@import url('/lib/shoplte/css/components.css');
+@import url('/lib/shoplte/css/forms.css');
+@import url('/lib/shoplte/css/product.css');
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f4f6f9;
+}

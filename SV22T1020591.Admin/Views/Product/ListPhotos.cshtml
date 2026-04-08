@@ -1,0 +1,85 @@
+﻿@model List<ProductPhoto>
+@{
+    Layout = null;
+    var photos = Model ?? new List<ProductPhoto>();
+    var productId = ViewBag.ProductID;
+}
+
+<div class="row justify-content-center">
+    <div class="col-12">
+        <div class="card card-info card-outline mt-4">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col">
+                        <h6 id="photos" class="mb-0">
+                            Thư viện ảnh
+                        </h6>
+                    </div>
+                    <div class="col text-end">
+                        <a class="btn btn-sm btn-primary"
+                           asp-controller="Product"
+                           asp-action="CreatePhoto"
+                           asp-route-productId="@productId">
+                            Thêm ảnh
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-1">
+                <table class="table table-bordered table-hover mb-0">
+                    <tbody>
+                        @if (!photos.Any())
+                        {
+                            <tr>
+                                <td class="text-center">Chưa có ảnh</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item in photos)
+                            {
+                                <tr>
+                                    <td>
+                                        <img src="@Url.Content($"~/images/products/{item.Photo}")"
+                                             style="max-height:80px;" />
+                                    </td>
+                                    <td>@item.Description</td>
+                                    <td>@item.DisplayOrder</td>
+                                    <td>
+                                        @if (!item.IsHidden)
+                                        {
+                                            <span>Hiện</span>
+                                        }
+                                        else
+                                        {
+                                            <span>Ẩn</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <!-- EDIT -->
+                                        <a class="btn btn-sm btn-primary"
+                                           asp-action="EditPhoto"
+                                           asp-route-productId="@item.ProductID"
+                                           asp-route-photoId="@item.PhotoID">
+                                            Sửa
+                                        </a>
+
+                                        <!-- DELETE - ĐÃ SỬA -->
+                                        <a class="btn btn-sm btn-danger"
+                                           asp-action="DeletePhoto"
+                                           asp-route-productId="@item.ProductID"
+                                           asp-route-photoId="@item.PhotoID"
+                                           onclick="return confirm('Xóa ảnh này?')">
+                                            Xóa
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

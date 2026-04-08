@@ -1,0 +1,119 @@
+﻿@model SV22T1020591.Models.Partner.Customer
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+}
+
+<div class="container mt-4">
+    <div class="row">
+
+        <!-- LEFT -->
+        <div class="col-md-4">
+            <div class="card text-center p-4 shadow-sm">
+                <img src="~/images/users/default-avatar.png"
+                     class="rounded-circle mx-auto mb-3"
+                     style="width:120px;height:120px;object-fit:cover;" />
+
+                <h5 class="mb-1">@Model.CustomerName</h5>
+                <p class="text-muted">@Model.Email</p>
+
+                <a asp-controller="Account" asp-action="ChangePassword"
+                   class="btn btn-warning btn-sm mt-2">
+                    🔒 Đổi mật khẩu
+                </a>
+            </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="col-md-8">
+            <div class="card p-4 shadow-sm">
+
+                <h4 class="mb-3">Thông tin chi tiết</h4>
+
+                <!-- HIỂN THỊ LỖI TỔNG -->
+                <div asp-validation-summary="All" class="text-danger mb-2"></div>
+
+                @if (!string.IsNullOrEmpty(ViewBag.Message as string))
+                {
+                    <div class="alert alert-success">
+                        @ViewBag.Message
+                    </div>
+                }
+
+                <form asp-controller="Account" asp-action="Profile" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="CustomerID" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Họ và tên</label>
+                            <input asp-for="CustomerName" class="form-control" />
+                            <span asp-validation-for="CustomerName" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tên giao dịch</label>
+                            <input asp-for="ContactName" class="form-control" />
+                            <span asp-validation-for="ContactName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+
+                        <!-- 🔥 PROVINCE DROPDOWN (fixed) -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tỉnh / Thành</label>
+                            <!-- Use asp-items (expects IEnumerable<SelectListItem> in ViewBag.Provinces) -->
+                            <select asp-for="Province" class="form-select" asp-items="ViewBag.Provinces">
+                                <option value="">-- Chọn tỉnh/thành --</option>
+                            </select>
+                            <span asp-validation-for="Province" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Điện thoại</label>
+                            <input asp-for="Phone" class="form-control" />
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Địa chỉ</label>
+                        <input asp-for="Address" class="form-control" />
+                        <span asp-validation-for="Address" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <input asp-for="Email" type="email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Trạng thái</label>
+                            <input class="form-control"
+                                   value="@(Model.IsLocked ? "Bị khóa" : "Hoạt động")"
+                                   disabled />
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">
+                            💾 Lưu thay đổi
+                        </button>
+
+                        <a asp-controller="Home" asp-action="Index"
+                           class="btn btn-outline-secondary">
+                            ← Trang chủ
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

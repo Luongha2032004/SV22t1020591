@@ -1,0 +1,76 @@
+﻿@{
+    ViewBag.Title = "Đăng nhập";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng nhập - LiteCommerce</title>
+
+    <link rel="stylesheet" href="~/lib/overlay-scrollbars/overlayscrollbars.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/lib/adminlte/css/adminlte.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body class="login-page bg-body-secondary">
+    <div class="login-box">
+        <div class="login-logo">
+            <a href="~/"><b>Lương Hà</b> Shop</a>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-body login-card-body">
+                <p class="login-box-msg">Đăng nhập vào hệ thống</p>
+
+                <form asp-controller="Account" asp-action="Login" method="post">
+                    @Html.AntiForgeryToken()
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                    }
+
+                    <div class="input-group mb-3">
+                        <input name="username"
+                               type="email"
+                               class="form-control"
+                               placeholder="Email"
+                               value="@ViewBag.Username"
+                               required
+                               autofocus />
+                        <div class="input-group-text">
+                            <span class="bi bi-envelope"></span>
+                        </div>
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <input name="password"
+                               type="password"
+                               class="form-control"
+                               placeholder="Mật khẩu"
+                               required />
+                        <div class="input-group-text">
+                            <span class="bi bi-lock-fill"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary w-100">
+                                Đăng nhập
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/overlay-scrollbars/overlayscrollbars.browser.es6.min.js"></script>
+    <script src="~/lib/popperjs/popper.min.js"></script>
+    <script src="~/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script type="module" src="~/lib/adminlte/js/adminlte.js"></script>
+</body>
+</html>

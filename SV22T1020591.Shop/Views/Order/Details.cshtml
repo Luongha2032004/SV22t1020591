@@ -1,0 +1,60 @@
+﻿@model SV22T1020591.Models.Sales.OrderViewInfo
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+    var details = ViewBag.Details as List<SV22T1020591.Models.Sales.OrderDetailViewInfo> ?? new List<SV22T1020591.Models.Sales.OrderDetailViewInfo>();
+}
+
+<div class="container">
+    <h3 class="mb-4">Đơn hàng #@Model.OrderID</h3>
+
+    <div class="card p-3 mb-3">
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Thông tin khách hàng</h5>
+                <div>@Model.CustomerName</div>
+                <div>@Model.CustomerEmail</div>
+                <div>@Model.CustomerPhone</div>
+                <div>@Model.CustomerAddress</div>
+            </div>
+            <div class="col-md-6">
+                <h5>Thông tin giao nhận</h5>
+                <div>Tỉnh/TP: @Model.DeliveryProvince</div>
+                <div>Địa chỉ: @Model.DeliveryAddress</div>
+                <div>Trạng thái: @Model.Status</div>
+                <div>Thời gian: @Model.OrderTime.ToString("g")</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card p-3">
+        <h5>Chi tiết đơn hàng</h5>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Tên sản phẩm</th>
+                    <th class="text-center">Số lượng</th>
+                    <th class="text-end">Đơn giá</th>
+                    <th class="text-end">Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in details)
+                {
+                    <tr>
+                        <td>@d.ProductName</td>
+                        <td class="text-center">@d.Quantity</td>
+                        <td class="text-end">@String.Format("{0:N0} đ", d.SalePrice)</td>
+                        <td class="text-end">@String.Format("{0:N0} đ", d.SalePrice * d.Quantity)</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="text-end"><strong>Tổng</strong></td>
+                    <td class="text-end"><strong>@String.Format("{0:N0} đ", Model.TotalAmount)</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>

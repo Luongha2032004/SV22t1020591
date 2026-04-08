@@ -1,0 +1,95 @@
+﻿@model List<CartItem>
+
+@{
+    ViewData["Title"] = "Xác nhận đơn hàng";
+    var provinces = ViewBag.Provinces as List<SelectListItem> ?? new List<SelectListItem>();
+    bool provinceInvalid = ViewData.ModelState["province"]?.Errors?.Count > 0;
+    bool addressInvalid = ViewData.ModelState["address"]?.Errors?.Count > 0;
+}
+
+<div class="container">
+    <h3 class="mb-4">Xác nhận đặt hàng</h3>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info">Giỏ hàng rỗng. <a href="~/Product">Tiếp tục mua sắm</a></div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card p-3 mb-3">
+                    <h5>Danh sách sản phẩm</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Tên</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end">Đơn giá</th>
+                                <th class="text-end">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.ProductName</td>
+                                    <td class="text-center">@item.Quantity</td>
+                                    <td class="text-end">@String.Format("{0:N0} đ", item.SalePrice)</td>
+                                    <td class="text-end">@String.Format("{0:N0} đ", item.SalePrice * item.Quantity)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card p-3">
+                    <h5>Thông tin giao hàng</h5>
+
+                    <form asp-controller="Order" asp-action="CreateOrder" method="post" novalidate>
+                        @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="All" class="text-danger mb-2"></div>
+
+                        <div class="mb-3">
+                            <label class="form-label small">Tỉnh/Thành</label>
+                            <select name="province" class="form-select @(provinceInvalid ? "is-invalid" : "")" aria-invalid="@(provinceInvalid.ToString().ToLower())">
+                                @foreach (var p in provinces)
+                                {
+                                    <option value="@p.Value" selected="@(p.Selected ? "selected" : null)">@p.Text</option>
+                                }
+                            </select>
+                            @if (provinceInvalid)
+                            {
+                                <div class="invalid-feedback">
+                                    @foreach (var err in ViewData.ModelState["province"].Errors) { @err.ErrorMessage < br /> }
+                                </div>
+                            }
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small">Địa chỉ chi tiết</label>
+                            <textarea name="address" class="form-control @(addressInvalid ? "is-invalid" : "")" rows="3"></textarea>
+                            @if (addressInvalid)
+                            {
+                                <div class="invalid-feedback">
+                                    @foreach (var err in ViewData.ModelState["address"].Errors) { @err.ErrorMessage < br /> }
+                                </div>
+                            }
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-save">Xác nhận đặt hàng</button>
+                        </div>
+                    </form>
+
+                    <div class="mt-3 text-muted small">
+                        Sau khi xác nhận hệ thống sẽ tạo đơn và bạn sẽ được chuyển tới trang chi tiết đơn hàng.
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,73 @@
+﻿@model SV22T1020591.Models.Common.PagedResult<SV22T1020591.Models.Catalog.Product>
+@{
+    Layout = null;
+    int stt = ((Model?.Page ?? 1) - 1) * (Model?.PageSize ?? 3);
+}
+
+@if (Model != null && Model.DataItems != null && Model.DataItems.Count > 0)
+{
+    <div class="list-group">
+        @foreach (var item in Model.DataItems)
+        {
+            <div class="list-group-item">
+                <img src="@(Url.Content($"~/images/products/{(item.Photo ?? "nophoto.png")}"))"
+                     alt="@item.ProductName"
+                     class="img-thumbnail"
+                     style="max-height:100px" />
+
+                <div class="fw-bold">@item.ProductName</div>
+                <div class="text-muted small">ĐVT: @item.Unit</div>
+                <div class="text-primary fw-semibold mb-2">@item.Price.ToString("N0")</div>
+
+                <form method="post" onsubmit="addCartItem(event, this)">
+                    <input type="hidden" name="productId" value="@item.ProductID" />
+                    <input type="hidden" name="price" value="@item.Price" />
+
+                    <div class="input-group input-group-sm">
+                        <input type="number" name="quantity" value="1" min="1" class="form-control" />
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-cart-plus"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        }
+    </div>
+
+    @if (Model.PageCount > 1)
+    {
+        <div class="mt-3">
+            <ul class="pagination pagination-sm mb-0">
+                @foreach (var p in Model.GetDisplayPages())
+                {
+                    if (p.Page == 0)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
+                    else if (p.IsCurrent)
+                    {
+                        <li class="page-item active">
+                            <span class="page-link">@p.Page</span>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="javascript:void(0)"
+                               onclick="goToProductPage(@p.Page)">
+                                @p.Page
+                            </a>
+                        </li>
+                    }
+                }
+            </ul>
+        </div>
+    }
+}
+else
+{
+    <div class="text-muted">Không tìm thấy mặt hàng phù hợp</div>
+}

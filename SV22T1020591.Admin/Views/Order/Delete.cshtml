@@ -1,0 +1,24 @@
+﻿@{
+    Layout = null;
+    var orderId = ViewBag.OrderID ?? 0;
+}
+<form id="formDelete" action="@Url.Action("DeleteConfirmed", "Order")" method="post">
+    <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="bi bi-trash"></i> Xóa đơn hàng</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    </div>
+
+    <div class="modal-body">
+        <div class="alert alert-danger">
+            Bạn có chắc chắn muốn xóa đơn hàng này không? Hành động này không thể hoàn tác.
+        </div>
+        <input type="hidden" id="deleteOrderId" name="id" value="@orderId" />
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-danger">
+            <i class="bi bi-trash"></i> Xóa
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+    </div>
+</form>

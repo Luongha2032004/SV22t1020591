@@ -1,0 +1,70 @@
+﻿@using SV22T1020591.Models.Catalog
+@using SV22T1020591.Models.Common
+@using SV22T1020591.Models.Sales
+@using SV22T1020591.Shop
+@using SV22T1020591.Shop.Models
+@model PagedResult<OrderViewInfo>
+
+@{
+    ViewData["Title"] = "Đơn hàng";
+    var items = Model.Data ?? new List<OrderViewInfo>();
+}
+
+<div class="container">
+    <h3 class="mb-4">Danh sách đơn hàng</h3>
+
+    @if (!items.Any())
+    {
+        <div class="alert alert-info">Bạn chưa có đơn hàng nào.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Thời gian</th>
+                        <th>Khách hàng</th>
+                        <th class="text-end">Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var o in items)
+                    {
+                        <tr>
+                            <td>@o.OrderID</td>
+                            <td>@o.OrderTime.ToString("g")</td>
+                            <td>@o.CustomerName</td>
+                            <td class="text-end">@String.Format("{0:N0} đ", o.TotalAmount)</td>
+                            <td>@o.Status</td>
+                            <td>
+                                <a class="btn btn-sm btn-outline-primary" href="~/Order/Details/@o.OrderID">Chi tiết</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @* Paging *@
+        @if (Model.RowCount > Model.PageSize)
+        {
+            <nav class="mt-3">
+                <ul class="pagination justify-content-center">
+                    @{
+                        int totalPages = (int)Math.Ceiling((double)Model.RowCount / Model.PageSize);
+                        int current = Model.Page;
+                    }
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        var url = Url.Action("Index", new { Page = i });
+                        <li class="page-item @(i == current ? "active" : "")"><a class="page-link" href="@url">@i</a></li>
+                    }
+                </ul>
+            </nav>
+        }
+    }
+</div>

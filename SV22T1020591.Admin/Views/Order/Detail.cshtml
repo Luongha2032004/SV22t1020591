@@ -1,0 +1,265 @@
+﻿@model SV22T1020591.Models.Sales.OrderViewInfo
+@using SV22T1020591.Models.Sales
+@{
+    ViewBag.Title = "Chi tiết đơn hàng";
+    var details = ViewBag.OrderDetails as List<OrderDetailViewInfo> ?? new List<OrderDetailViewInfo>();
+    decimal total = details.Sum(d => d.Quantity * d.SalePrice);
+    string statusText = Model?.Status.ToString() ?? "";
+}
+
+@section PageToolBar {
+    <div class="btn-group">
+        <button type="button"
+                class="btn btn-primary dropdown-toggle"
+                data-bs-toggle="dropdown">
+            <i class="bi bi-gear me-1"></i>
+            Xử lý đơn hàng
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item open-modal" href="@Url.Action("Accept","Order", new { id = Model.OrderID })">Duyệt đơn hàng</a></li>
+            <li><a class="dropdown-item open-modal" href="@Url.Action("Shipping","Order", new { id = Model.OrderID })">Chuyển giao hàng</a></li>
+            <li><a class="dropdown-item open-modal" href="@Url.Action("Finish","Order", new { id = Model.OrderID })">Hoàn tất đơn hàng</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger open-modal" href="@Url.Action("Cancel","Order", new { id = Model.OrderID })">Hủy đơn hàng</a></li>
+            <li><a class="dropdown-item text-danger open-modal" href="@Url.Action("Reject","Order", new { id = Model.OrderID })">Từ chối đơn hàng</a></li>
+        </ul>
+    </div>
+
+    <a href="@Url.Action("Delete","Order", new { id = Model.OrderID })"
+       class="btn btn-danger ms-1 open-modal">
+        <i class="bi bi-trash"></i>
+        Xóa
+    </a>
+
+    <a href="~/Order" class="btn btn-secondary ms-1">
+        <i class="bi bi-arrow-left"></i>
+        Quay lại
+    </a>
+}
+
+<!-- TRẠNG THÁI ĐƠN HÀNG -->
+<div class="alert @(Model.Status == OrderStatusEnum.Completed ? "alert-success" : Model.Status == OrderStatusEnum.Shipping ? "alert-info" : "alert-warning") d-flex align-items-center mb-3">
+    <i class="bi bi-check-circle-fill fs-4 me-2"></i>
+    <div>
+        <strong>Trạng thái đơn hàng:</strong>
+        @statusText
+        @if (Model.FinishedTime.HasValue)
+        {
+            <span> lúc <b>@Model.FinishedTime.Value.ToString("g")</b></span>
+        }
+        else if (Model.AcceptTime.HasValue)
+        {
+            <span> lúc <b>@Model.AcceptTime.Value.ToString("g")</b></span>
+        }
+    </div>
+</div>
+
+<!-- THÔNG TIN ĐƠN HÀNG -->
+<div class="card card-primary card-outline mb-3">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-receipt me-2"></i>
+            Thông tin đơn hàng
+        </h5>
+    </div>
+
+    <div class="card-body ps-4 pe-4">
+        <div class="row mb-2">
+            <div class="col-md-3 fw-bold">Mã đơn hàng</div>
+            <div class="col-md-3">@Model.OrderID</div>
+
+            <div class="col-md-3 fw-bold">Ngày lập</div>
+            <div class="col-md-3">@Model.OrderTime.ToString("g")</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 fw-bold">Nhân viên phụ trách</div>
+            <div class="col-md-3">@Model.EmployeeName</div>
+
+            <div class="col-md-3 fw-bold">Ngày nhận đơn</div>
+            <div class="col-md-3">@Model.AcceptTime?.ToString("g")</div>
+        </div>
+    </div>
+</div>
+
+<!-- THÔNG TIN KHÁCH HÀNG -->
+<div class="card card-info card-outline mb-3">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-person me-2"></i>
+            Thông tin khách hàng
+        </h5>
+    </div>
+
+    <div class="card-body ps-4 pe-4">
+        <div class="row mb-2">
+            <div class="col-md-3 fw-bold">Khách hàng</div>
+            <div class="col-md-3">@Model.CustomerName</div>
+
+            <div class="col-md-3 fw-bold">Tên giao dịch</div>
+            <div class="col-md-3">@Model.CustomerContactName</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-md-3 fw-bold">Email</div>
+            <div class="col-md-9">@Model.CustomerEmail</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 fw-bold">Địa chỉ</div>
+            <div class="col-md-9">@Model.CustomerAddress</div>
+        </div>
+    </div>
+</div>
+
+<!-- THÔNG TIN GIAO HÀNG -->
+<div class="card card-success card-outline mb-3">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-truck me-2"></i>
+            Thông tin giao hàng
+        </h5>
+    </div>
+
+    <div class="card-body ps-4 pe-4">
+        <div class="row mb-2">
+            <div class="col-md-3 fw-bold">Người giao hàng</div>
+            <div class="col-md-3">@Model.ShipperName</div>
+
+            <div class="col-md-3 fw-bold">Điện thoại</div>
+            <div class="col-md-3">@Model.ShipperPhone</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-md-3 fw-bold">Địa chỉ giao hàng</div>
+            <div class="col-md-9">@Model.DeliveryAddress</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 fw-bold">Tỉnh / Thành</div>
+            <div class="col-md-9">@Model.DeliveryProvince</div>
+        </div>
+    </div>
+</div>
+
+<!-- DANH SÁCH MẶT HÀNG -->
+<div class="card card-secondary card-outline">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-box-seam me-2"></i>
+            Danh sách mặt hàng
+        </h5>
+    </div>
+
+    <div class="card-body table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-secondary text-center">
+                <tr>
+                    <th>STT</th>
+                    <th>Tên hàng</th>
+                    <th>ĐVT</th>
+                    <th>Số lượng</th>
+                    <th class="text-end">Giá</th>
+                    <th class="text-end">Thành tiền</th>
+                    <th style="width:120px"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!details.Any())
+                {
+                    <tr><td colspan="7" class="text-center text-muted">Không có mặt hàng</td></tr>
+                }
+                else
+                {
+                    int i = 0;
+                    foreach (var it in details)
+                    {
+                        i++;
+                        <tr>
+                            <td class="text-center">@i</td>
+                            <td>@it.ProductName</td>
+                            <td class="text-center">@it.Unit</td>
+                            <td class="text-center">@it.Quantity</td>
+                            <td class="text-end">@String.Format("{0:N0}", it.SalePrice)</td>
+                            <td class="text-end">@String.Format("{0:N0}", it.Quantity * it.SalePrice)</td>
+                            <td class="text-end">
+                                <a href="javascript:void(0)" onclick="openEditCartItem(@Model.OrderID, @it.ProductID)" class="btn btn-sm btn-primary" title="Sửa">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="javascript:void(0)" onclick="openDeleteCartItem(@Model.OrderID, @it.ProductID)" class="btn btn-sm btn-danger" title="Xóa">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="5" class="text-end">Tổng cộng</th>
+                    <th class="text-end">@String.Format("{0:N0} đ", total)</th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<!-- Modal container -->
+<div class="modal fade" id="dialogModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <!-- Nội dung sẽ được load từ AJAX vào đây -->
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .card-body .row {
+            border-bottom: 1px dotted #646464;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Delegate clicks on elements with .open-modal to the global openModal (fetch-based)
+        document.addEventListener('click', function (e) {
+            const el = e.target.closest('.open-modal');
+            if (!el) return;
+
+            e.preventDefault();
+            // prefer data-url (used in this view), fall back to href
+            const url = el.dataset.url || el.getAttribute('href');
+            if (!url) return;
+
+            // window.openModal signature from site.js: openModal(eventOrNull, linkOrUrl, orderId)
+            if (typeof window.openModal === 'function') {
+                window.openModal(null, url);
+            } else {
+                console.error('openModal is not defined.');
+            }
+        });
+
+        // Open delete modal for order
+        function openDeleteModal(orderId) {
+            window.openModal(null, '@Url.Action("Delete", "Order")?id=' + orderId);
+        }
+
+        // Open edit cart item modal
+        function openEditCartItem(orderId, productId) {
+            window.openModal(null, '@Url.Action("EditCartItem", "Order")?id=' + orderId + '&productId=' + productId);
+        }
+
+        // Open delete cart item modal
+        function openDeleteCartItem(orderId, productId) {
+            window.openModal(null, '@Url.Action("DeleteCartItem", "Order")?id=' + orderId + '&productId=' + productId);
+        }
+
+        // Utility used by some modals
+        window.reloadPage = function () {
+            location.reload();
+        };
+    </script>
+}

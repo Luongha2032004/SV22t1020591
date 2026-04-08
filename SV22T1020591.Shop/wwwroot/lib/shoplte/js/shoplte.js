@@ -1,0 +1,1 @@
+﻿console.log("H'Khanh Shop Loaded");

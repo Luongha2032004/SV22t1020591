@@ -1,0 +1,10 @@
+﻿@model SV22T1020591.Models.Catalog.Product
+@{
+    ViewData["Title"] = "Bổ sung mặt hàng";
+}
+
+/* This view delegates to the existing Edit view so you don't duplicate the form markup.
+   The ProductController.Create() already returns View("Edit", new Product()), but
+   if you navigate directly to /Product/Create this file will render the same UI.
+*/
+@await Html.PartialAsync("Edit", Model ?? new SV22T1020591.Models.Catalog.Product())
